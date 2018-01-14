@@ -75,14 +75,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 var Main = /** @class */ (function () {
     function Main() {
     }
-    Main.prototype.createStudent = function (student) {
-        var students = __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].getStudents();
-        students.push(student);
-        localStorage.setItem('students', JSON.stringify(students));
-    };
     Main.prototype.studentRowGenerator = function (student) {
-        var tmp = "<tr class=\"studentRow\" id=\"" + student.id + "\">\n                <td>" + student.id + "</td>\n                <td>" + student.name + "</td>\n                <td>" + student.score + "</td>\n            </tr>";
-        console.log(tmp);
+        var tmp = "<tr class=\"studentRow\">\n                <td>" + student.name + "</td>\n                <td>" + student.score + "</td>\n                <td>\n                    <button class=\"btn btn-danger deleteClass\" data-id=\"" + student.id + "\" id=\"student-" + student.id + "\">Delete</button>\n                </td>\n            </tr>";
         return tmp;
     };
     Main.prototype.studentTableGenerator = function (students) {
@@ -96,7 +90,6 @@ var Main = /** @class */ (function () {
         else {
             rows = 'No Student Found. Please Add Some Students';
         }
-        console.log(rows);
         return rows;
     };
     Main.prototype.guid = function () {
@@ -109,8 +102,30 @@ var Main = /** @class */ (function () {
             s4() + '-' + s4() + s4() + s4();
     };
     Main.prototype.populateData = function (element, students) {
+        var _this = this;
         students = students || __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].getStudents();
         element.innerHTML = this.studentTableGenerator(students);
+        if (students && students.length > 0) {
+            students.forEach(function (student) {
+                _this.generateEventListener(element, student);
+            });
+        }
+    };
+    Main.prototype.generateEventListener = function (mainContent, student) {
+        var selectorId = "#student-" + student.id;
+        var element = mainContent.querySelector(selectorId);
+        element.addEventListener('click', function (ev) {
+            var dataId = this.getAttribute("data-id");
+            var studentRows = document.querySelector(".studentRows");
+            var success = __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].deleteStudent(dataId.toString());
+            if (success) {
+                var indexClass = new Main();
+                indexClass.populateData(studentRows);
+            }
+            else {
+                alert("Couldn't be deleted");
+            }
+        }, false);
     };
     return Main;
 }());
@@ -120,6 +135,7 @@ window.onload = function () {
     var studentRows = mainContent.querySelector(".studentRows");
     var students = __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].getStudents();
     var mainObj = new Main();
+    var flag = false;
     mainObj.populateData(studentRows);
     var addStudent = mainContent.querySelector("#addStudent");
     addStudent.addEventListener('click', function () {
@@ -132,14 +148,22 @@ window.onload = function () {
     formSubmitId.addEventListener('click', function () {
         var name = mainContent.querySelector('#name').value;
         var score = +mainContent.querySelector('#score').value;
-        mainObj.createStudent(new __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */]({ id: mainObj.guid(), name: name, score: score }));
+        var student = new __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */]({ id: mainObj.guid(), name: name, score: score });
+        __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].createStudent(student);
         mainObj.populateData(studentRows);
+        mainObj.generateEventListener(mainContent, student);
+        mainContent.querySelector("#studentTable").className = "row show";
+        mainContent.querySelector("#formContent").className = "row hide";
+    });
+    var formCancel = mainContent.querySelector("#formCancel");
+    formCancel.addEventListener('click', function () {
         mainContent.querySelector("#studentTable").className = "row show";
         mainContent.querySelector("#formContent").className = "row hide";
     });
     var sortStudent = mainContent.querySelector("#sortStudent");
     sortStudent.addEventListener('click', function () {
-        mainObj.populateData(studentRows, __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].sortStudents(__WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].getStudents()));
+        flag = !flag;
+        mainObj.populateData(studentRows, __WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].sortStudents(__WEBPACK_IMPORTED_MODULE_0__student__["a" /* Student */].getStudents(), flag));
     });
 };
 
@@ -162,12 +186,17 @@ var Student = /** @class */ (function () {
             return id === student.id;
         })[0];
     };
-    Student.sortStudents = function (students) {
+    Student.createStudent = function (student) {
+        var students = Student.getStudents();
+        students.push(student);
+        localStorage.setItem('students', JSON.stringify(students));
+    };
+    Student.sortStudents = function (students, flag) {
         students.sort(function (a, b) {
             if (a.score > b.score)
-                return 1;
+                return flag ? 1 : -1;
             else if (a.score < b.score)
-                return -1;
+                return flag ? -1 : 1;
             else
                 return 0;
         });
@@ -176,7 +205,6 @@ var Student = /** @class */ (function () {
     Student.getStudents = function () {
         var students = [];
         if (JSON.parse(localStorage.getItem('students'))) {
-            console.log('true');
             var stnds = JSON.parse(localStorage.getItem('students'));
             for (var _i = 0, stnds_1 = stnds; _i < stnds_1.length; _i++) {
                 var stdn = stnds_1[_i];
@@ -184,10 +212,24 @@ var Student = /** @class */ (function () {
             }
         }
         else {
-            console.log('false');
             localStorage.setItem('students', null);
         }
         return students;
+    };
+    Student.deleteStudent = function (id) {
+        var students = Student.getStudents();
+        var tempStdn = [];
+        var flag = false;
+        students.forEach(function (student) {
+            if (id !== student.id) {
+                tempStdn.push(student);
+            }
+            else {
+                flag = true;
+            }
+        });
+        localStorage.setItem('students', JSON.stringify(tempStdn));
+        return flag;
     };
     return Student;
 }());

@@ -1,7 +1,28 @@
+.main-content {
+    max-width: 991px;
+    margin: auto;
+    padding-top: 100px;
+}
+
 .show {
     display: block !important;
 }
 
 .hide {
     display: none !important;
+}
+
+.student-action-button {
+    text-align: right;
+    padding: 10px 0;
+}
+
+.student-header-button {
+    text-align: center;
+}
+
+@media (max-width: 575px) { 
+    .student-action-button {
+        text-align: center;
+    }
 }

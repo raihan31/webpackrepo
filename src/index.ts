@@ -7,19 +7,14 @@ export class Main {
         
     }
 
-    createStudent(student: Student) {
-        let students = Student.getStudents();
-        students.push(student);
-        localStorage.setItem('students', JSON.stringify(students));
-    }
-
     studentRowGenerator(student: Student): string {
-        let tmp = `<tr class="studentRow" id="${student.id}">
-                <td>${student.id}</td>
+        let tmp = `<tr class="studentRow">
                 <td>${student.name}</td>
                 <td>${student.score}</td>
-            </tr>`
-            console.log(tmp);
+                <td>
+                    <button class="btn btn-danger deleteClass" data-id="${student.id}" id="student-${student.id}">Delete</button>
+                </td>
+            </tr>`;
         return tmp;
     } 
 
@@ -33,7 +28,6 @@ export class Main {
         else {
             rows = 'No Student Found. Please Add Some Students';
         }
-        console.log(rows);
         return rows;
     } 
 
@@ -47,9 +41,32 @@ export class Main {
           s4() + '-' + s4() + s4() + s4();
     }
 
+
     populateData(element:any, students?: Student[]) {
         students = students || Student.getStudents(); 
         element.innerHTML = this.studentTableGenerator(students);
+        if(students && students.length > 0){
+            students.forEach((student) => {
+                this.generateEventListener(element ,student);
+            })
+        }
+    }
+
+    generateEventListener(mainContent: any, student: Student){
+        let selectorId = "#student-" + student.id
+        let element = mainContent.querySelector(selectorId);
+        element.addEventListener('click', function(ev: Event){
+            let dataId = this.getAttribute("data-id");
+            let studentRows = document.querySelector(".studentRows");
+            let success = Student.deleteStudent(dataId.toString());
+            if(success) {
+                let indexClass = new Main();
+                indexClass.populateData(studentRows); 
+            }
+            else {
+                alert("Couldn't be deleted");
+            }
+        }, false);
     }
 }
 
@@ -58,6 +75,7 @@ window.onload = () => {
     let studentRows = mainContent.querySelector(".studentRows");
     let students = Student.getStudents();
     let mainObj = new Main();
+    let flag = false;
     mainObj.populateData(studentRows);
     let addStudent = mainContent.querySelector("#addStudent");
     addStudent.addEventListener('click', function(){
@@ -72,8 +90,17 @@ window.onload = () => {
     formSubmitId.addEventListener('click', function(){
         let name = (<HTMLInputElement>mainContent.querySelector('#name')).value;
         let score = +(<HTMLInputElement>mainContent.querySelector('#score')).value;
-        mainObj.createStudent(new Student({id: mainObj.guid(), name: name, score: score}));
+        let student:Student = new Student({id: mainObj.guid(), name: name, score: score})
+        Student.createStudent(student);
         mainObj.populateData(studentRows);
+        mainObj.generateEventListener(mainContent, student);
+        mainContent.querySelector("#studentTable").className = "row show";
+        mainContent.querySelector("#formContent").className = "row hide";
+    });
+
+    let formCancel = mainContent.querySelector("#formCancel");
+
+    formCancel.addEventListener('click', function(){
         mainContent.querySelector("#studentTable").className = "row show";
         mainContent.querySelector("#formContent").className = "row hide";
     });
@@ -81,7 +108,9 @@ window.onload = () => {
     let sortStudent = mainContent.querySelector("#sortStudent");
 
     sortStudent.addEventListener('click', function(){
-        mainObj.populateData(studentRows, Student.sortStudents(Student.getStudents()));
+        flag = !flag;
+        mainObj.populateData(studentRows, Student.sortStudents(Student.getStudents(), flag));
     });
+
 
 };

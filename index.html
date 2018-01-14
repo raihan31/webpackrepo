@@ -15,8 +15,11 @@
 </head>
 
 <body>
-    <div class="container-fluid" id="mainContent">
-        <div class="row hide" id="formContent">
+    <div class="container main-content" id="mainContent">
+        <div class="hide" id="formContent">
+            <div class="form-group student-header-button">
+                <h3>Add Student</h3>
+            </div>
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" class="form-control" id="name" aria-describedby="Name" placeholder="Enter Name">
@@ -25,27 +28,32 @@
                 <label for="score">Score</label>
                 <input type="number" class="form-control" id="score" placeholder="Score">
             </div>
-            <button id="formSubmit" class="btn btn-primary">Submit</button>
+            <div class="form-group">
+                <button id="formSubmit" class="btn btn-primary">Submit</button>
+                <button id="formCancel" class="btn btn-default">Cancel</button>
+            </div>
         </div>
-        <div id="studentTable">
-            <div class="row">
-                <div class="col-md-12">
-                    <h3>Teachers</h3>
-                    <div class="row">
-                        <button class="btn btn-primary pull-right" id="addStudent">Add Student</button>
-                        <button class="btn btn-primary pull-right" id="sortStudent">Sort Student</button>
+        <div id="studentTable" class="table show">
+            <div>
+                <div class="col-md-12 ">
+                    <div class="student-header-button">
+                        <h3>Students</h3>
+                    </div>
+                    <div class="student-action-button">
+                        <button class="btn btn-primary" id="addStudent">Add Student</button>
+                        <button class="btn btn-primary" id="sortStudent">Sort Student</button>
                     </div>
                 </div>
             </div>
-            <div class="row show">
+            <div>
                 <div class="col-md-12">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Score</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody class="studentRows">
